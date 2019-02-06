@@ -10,17 +10,32 @@ import (
 type Product struct {
 	XMLName xml.Name `xml:"product"`
 	ID      string   `xml:"product-id,attr"`
-	VGID    *Variation
-	Color   CustomAttr `xml:"custom-attributes>custom-attribute,omitempty"`
+	VGID    *Variations
+	Color   *CustomAttrs
 }
 
-type Variation struct {
-	XMLName xml.Name `xml:"variations,omitempty"`
+type Variations struct {
+	XMLName         xml.Name `xml:"variations,omitempty"`
+	VariationGroups *VariationGroups
+}
+
+type VariationGroups struct {
+	XMLName        xml.Name `xml:"variations,omitempty"`
+	VariationGroup *VariationGroup
+}
+
+type VariationGroup struct {
+	XMLName xml.Name `xml:"variation-group,omitempty"`
 	ID      string   `xml:"product-id,attr"`
 }
 
+type CustomAttrs struct {
+	XMLName    xml.Name `xml:"custom-attributes,omitempty"`
+	CustomAttr *CustomAttr
+}
+
 type CustomAttr struct {
-	XMLName xml.Name `xml:"custom-attribute"`
+	XMLName xml.Name `xml:"custom-attribute,omitempty"`
 	ID      string   `xml:"attribute-id,attr"`
 	Value   string   `xml:",chardata"`
 }
@@ -46,34 +61,36 @@ func main() {
 	}
 
 	//var masters = make([]Product, len(records), len(records))
-	var vGs = make([]Product, len(records), len(records))
+	var products = make([][]Product, len(records), len(records))
 
 	//Loop al file rows
-	for i := 0; i < len(records); i++ {
+	for i := 0; i < len(records); i += 2 {
 
-		//Loop single csv element
-
-		/*	masters[i] = Product{
-			ID: records[i][1] + "_" + records[i][3],
-			VGID: Variation{
+		products[i] = []Product{
+			Product{
+				ID: records[i][1] + "_" + records[i][3],
+				VGID: &Variations{
+					VariationGroups: &VariationGroups{
+						VariationGroup: &VariationGroup{
+							ID: records[i][1] + "_" + records[i][3] + "_" + records[i][12],
+						},
+					},
+				},
+			},
+			Product{
 				ID: records[i][1] + "_" + records[i][3] + "_" + records[i][12],
-			},
-		}*/
-
-		vGs[i] = Product{
-			ID: records[i][1] + "_" + records[i][3] + "_" + records[i][12],
-			VGID: &Variation{
-				ID: "ook",
-			},
-			Color: CustomAttr{
-				ID:    "color",
-				Value: records[i][12],
+				Color: &CustomAttrs{
+					CustomAttr: &CustomAttr{
+						ID:    "color",
+						Value: records[i][12],
+					},
+				},
 			},
 		}
 
 	}
 
-	output, err := xml.MarshalIndent(vGs, "  ", "    ")
+	output, err := xml.MarshalIndent(products, "  ", "    ")
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
