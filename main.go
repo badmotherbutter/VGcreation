@@ -20,7 +20,7 @@ type Variations struct {
 }
 
 type VariationGroups struct {
-	XMLName        xml.Name `xml:"variations,omitempty"`
+	XMLName        xml.Name `xml:"variation-groups,omitempty"`
 	VariationGroup *VariationGroup
 }
 
@@ -63,7 +63,7 @@ func main() {
 	//var masters = make([]Product, len(records), len(records))
 	var products = make([][]Product, len(records), len(records))
 
-	//Loop al file rows
+	//Loop all file rows
 	for i := 0; i < len(records); i += 2 {
 
 		products[i] = []Product{
@@ -91,10 +91,23 @@ func main() {
 	}
 
 	output, err := xml.MarshalIndent(products, "  ", "    ")
+
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
 
-	os.Stdout.Write(output)
+	fXML, err := os.Create("dest/vgcatalog.xml")
+
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+	}
+
+	_, err1 := fXML.Write(output)
+
+	if err1 != nil {
+		fmt.Printf("error: %v\n", err1)
+	}
+
+	fXML.Sync()
 
 }
