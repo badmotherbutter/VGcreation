@@ -54,24 +54,26 @@ func main() {
 	defer csvFile.Close()
 
 	reader := csv.NewReader(csvFile)
+	//Set ; as CSV separator
 	reader.Comma = ';'
 
+	//Read all CSV records
 	records, err := reader.ReadAll()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	//var masters = make([]Product, len(records), len(records))
+	//Create a bidimensional slice to store both master product and variations
 	var products = make([][]Product, 0, len(records))
 
 	//Loop all file rows
 	for i := 0; i < len(records); i++ {
 
-		masterID := records[i][1] + "_" + records[i][3]
-
-		if !valueInSlice(masterID, products) {
-			variationID := records[i][1] + "_" + records[i][3] + "_" + records[i][12]
+		variationID := records[i][1] + "_" + records[i][3] + "_" + records[i][12]
+		//Check if master is
+		if !valueInSlice(variationID, products) {
+			masterID := records[i][1] + "_" + records[i][3]
 			products = append(products, []Product{
 				Product{
 					ID: masterID,
@@ -99,14 +101,14 @@ func main() {
 
 	}
 
+	//Marshal products to XML
 	output, err := xml.MarshalIndent(products, "  ", "    ")
-
-	//output = append(output, "</catalog>"...)
 
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
 
+	//Create target file
 	fXML, err := os.Create("dest/vgcatalog.xml")
 
 	if err != nil {
@@ -123,11 +125,12 @@ func main() {
 
 }
 
+//Check if a Variation group ID isinside the products slice
 func valueInSlice(val string, slice [][]Product) bool {
 
 	if len(slice) > 0 {
 		for _, v := range slice {
-			if val == v[0].ID || val == v[1].ID {
+			if val == v[1].ID {
 				return true
 			}
 		}
