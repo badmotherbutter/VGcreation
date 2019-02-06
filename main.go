@@ -8,10 +8,12 @@ import (
 )
 
 type Product struct {
-	XMLName xml.Name `xml:"product"`
-	ID      string   `xml:"product-id,attr"`
-	VGID    *Variations
-	Color   *CustomAttrs
+	XMLName    xml.Name `xml:"product"`
+	ID         string   `xml:"product-id,attr"`
+	Searchable bool     `xml:"searchable-flag,omitempty"`
+	Brand      string   `xml:"brand,omitempty"`
+	VGID       *Variations
+	Color      *CustomAttrs
 }
 
 type Variations struct {
@@ -61,36 +63,45 @@ func main() {
 	}
 
 	//var masters = make([]Product, len(records), len(records))
-	var products = make([][]Product, len(records), len(records))
+	var products = make([][]Product, 0, len(records))
 
 	//Loop all file rows
-	for i := 0; i < len(records); i += 2 {
+	for i := 0; i < len(records); i++ {
 
-		products[i] = []Product{
-			Product{
-				ID: records[i][1] + "_" + records[i][3],
-				VGID: &Variations{
-					VariationGroups: &VariationGroups{
-						VariationGroup: &VariationGroup{
-							ID: records[i][1] + "_" + records[i][3] + "_" + records[i][12],
+		masterID := records[i][1] + "_" + records[i][3]
+
+		if !valueInSlice(masterID, products) {
+			variationID := records[i][1] + "_" + records[i][3] + "_" + records[i][12]
+			products = append(products, []Product{
+				Product{
+					ID: masterID,
+					VGID: &Variations{
+						VariationGroups: &VariationGroups{
+							VariationGroup: &VariationGroup{
+								ID: variationID,
+							},
 						},
 					},
 				},
-			},
-			Product{
-				ID: records[i][1] + "_" + records[i][3] + "_" + records[i][12],
-				Color: &CustomAttrs{
-					CustomAttr: &CustomAttr{
-						ID:    "color",
-						Value: records[i][12],
+				Product{
+					ID:         variationID,
+					Searchable: true,
+					Brand:      records[i][40],
+					Color: &CustomAttrs{
+						CustomAttr: &CustomAttr{
+							ID:    "color",
+							Value: records[i][12],
+						},
 					},
 				},
-			},
+			})
 		}
 
 	}
 
 	output, err := xml.MarshalIndent(products, "  ", "    ")
+
+	//output = append(output, "</catalog>"...)
 
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
@@ -110,4 +121,16 @@ func main() {
 
 	fXML.Sync()
 
+}
+
+func valueInSlice(val string, slice [][]Product) bool {
+
+	if len(slice) > 0 {
+		for _, v := range slice {
+			if val == v[0].ID || val == v[1].ID {
+				return true
+			}
+		}
+	}
+	return false
 }
