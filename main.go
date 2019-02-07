@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Product struct {
@@ -70,10 +71,16 @@ func main() {
 	//Loop all file rows
 	for i := 0; i < len(records); i++ {
 
-		variationID := records[i][1] + "_" + records[i][3] + "_" + records[i][12]
+		colorID := records[i][12]
+		if nb, _ := strconv.Atoi(colorID); nb < 10 {
+			colorID = "0" + colorID
+		}
+
+		variationID := records[i][1] + "_" + records[i][3] + "_" + colorID
 		//Check if master is
 		if !valueInSlice(variationID, products) {
 			masterID := records[i][1] + "_" + records[i][3]
+
 			products = append(products, []Product{
 				Product{
 					ID: masterID,
@@ -92,7 +99,7 @@ func main() {
 					Color: &CustomAttrs{
 						CustomAttr: &CustomAttr{
 							ID:    "color",
-							Value: records[i][12],
+							Value: colorID,
 						},
 					},
 				},
