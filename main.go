@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 type Product struct {
@@ -72,9 +71,9 @@ func main() {
 	for i := 0; i < len(records); i++ {
 
 		colorID := records[i][12]
-		if nb, _ := strconv.Atoi(colorID); nb < 10 {
-			colorID = "0" + colorID
-		}
+		// if nb, _ := strconv.Atoi(colorID); nb < 10 {
+		// 	colorID = "0" + colorID
+		// }
 
 		variationID := records[i][1] + "_" + records[i][3] + "_" + colorID
 		//Check if master is
